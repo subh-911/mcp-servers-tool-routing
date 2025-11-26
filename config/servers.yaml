@@ -1,0 +1,69 @@
+# MCP Server Configurations
+# This file defines the MCP servers to connect to on startup
+
+servers:
+  # Database MCP Server
+  - name: "database"
+    description: "Database operations server"
+    enabled: true
+    connection:
+      type: "stdio"  # stdio, sse, or websocket
+      command: "python"
+      args:
+        - "src/examples/mock_servers/database_server.py"
+      env: {}
+    options:
+      auto_reconnect: true
+      max_reconnect_attempts: 3
+      reconnect_delay: 5
+      health_check_interval: 30
+
+  # Filesystem MCP Server
+  - name: "filesystem"
+    description: "File system operations server"
+    enabled: true
+    connection:
+      type: "stdio"
+      command: "python"
+      args:
+        - "src/examples/mock_servers/filesystem_server.py"
+      env: {}
+    options:
+      auto_reconnect: true
+      max_reconnect_attempts: 3
+      reconnect_delay: 5
+      health_check_interval: 30
+
+  # API MCP Server
+  - name: "api"
+    description: "External API operations server"
+    enabled: true
+    connection:
+      type: "stdio"
+      command: "python"
+      args:
+        - "src/examples/mock_servers/api_server.py"
+      env: {}
+    options:
+      auto_reconnect: true
+      max_reconnect_attempts: 3
+      reconnect_delay: 5
+      health_check_interval: 30
+
+# Example configurations for different connection types:
+
+# SSE Connection Example:
+# - name: "remote_server"
+#   connection:
+#     type: "sse"
+#     url: "http://localhost:3000/sse"
+#     headers:
+#       Authorization: "Bearer ${API_TOKEN}"
+
+# WebSocket Connection Example:
+# - name: "ws_server"
+#   connection:
+#     type: "websocket"
+#     url: "ws://localhost:3000/ws"
+#     headers:
+#       Authorization: "Bearer ${WS_TOKEN}"

@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # MCP Tool Router API
+  router:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp-tool-router
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - HOST=0.0.0.0
+      - PORT=8000
+      - SERVERS_CONFIG_PATH=config/servers.yaml
+      - SETTINGS_CONFIG_PATH=config/settings.yaml
+    volumes:
+      - ./config:/app/config:ro
+      - ./logs:/app/logs
+      - ./src:/app/src:ro
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    depends_on:
+      - database-server
+      - filesystem-server
+      - api-server
+
+  # Mock Database MCP Server
+  database-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp-database-server
+    command: ["python", "src/examples/mock_servers/database_server.py"]
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./src:/app/src:ro
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Mock Filesystem MCP Server
+  filesystem-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp-filesystem-server
+    command: ["python", "src/examples/mock_servers/filesystem_server.py"]
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./src:/app/src:ro
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Mock API MCP Server
+  api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp-api-server
+    command: ["python", "src/examples/mock_servers/api_server.py"]
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./src:/app/src:ro
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+networks:
+  mcp-network:
+    driver: bridge
+
+volumes:
+  logs:
